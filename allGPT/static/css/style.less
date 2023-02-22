@@ -23,7 +23,8 @@ body {
   height: auto;
   margin: 0 auto;
   position: relative;
-  img {
+  margin-bottom: 100px;
+  #firstImg {
     position: absolute;
     top: 0;
     height: 60px;
@@ -49,14 +50,13 @@ body {
   .me {
     width: 100%;
     min-height: 60px;
+    height: auto;
     position: relative;
     margin-bottom: 10px;
     .me-info {
-      max-width: 700px;
-      position: absolute;
-      right: 0;
       display: flex;
       align-items: center;
+      flex-direction: row-reverse;
       img {
         right: 0;
       }
@@ -67,7 +67,7 @@ body {
   }
   .info {
     background-color: aqua;
-    max-width: 500px;
+    // max-width: 1000px;
     display: inline-block;
     padding: 10px 20px;
     border: solid 1px aqua;

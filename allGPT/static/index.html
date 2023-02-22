@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 引入elementui样式文件 -->
+    <link rel="stylesheet" href="./plugins/elementui/index.css" />
+    <link rel="shortcut icon" href="./images/ai.jfif" type="image/x-icon" />
+    <link rel="stylesheet" href="./css/style.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      <span id="logo">ALLGPT</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120">
+        <path
+          fill="#0099ff"
+          fill-opacity="1"
+          d="M0,96L80,101.3C160,107,320,117,480,106.7C640,96,800,64,960,58.7C1120,53,1280,75,1360,85.3L1440,96L1440,0L1360,0C1280,0,1120,0,960,0C800,0,640,0,480,0C320,0,160,0,80,0L0,0Z"
+        ></path>
+      </svg>
+      <div id="content" refs="content">
+        <div class="ai">
+          <div class="ai-info">
+            <img id="firstImg" src="./images/ai.jfif" alt="" />
+            <div class="answer info">欢迎来到ALLGPT🎈</div>
+          </div>
+        </div>
+        <div class="ai">
+          <div class="ai-info">
+            <img id="firstImg" src="./images/ai.jfif" alt="" />
+            <div class="answer info">请在下方选择框进行输入选择☀️</div>
+          </div>
+        </div>
+      </div>
+      <div id="footer" @keyup.enter="submit">
+        <el-cascader v-model="value" :options="options"></el-cascader>
+        <el-input
+          v-model="inputText"
+          :disabled="noselect"
+          placeholder="请先进行选择"
+          v-show="!showFile"
+          @keyup.enter="submit"
+        ></el-input>
+        <el-input
+          v-show="showFile"
+          @change.native="addPic($event)"
+          type="file"
+          v-model="inputPic"
+          accept="image/png, image/jpg, image/jpeg"
+          :disabled="noselect"
+          placeholder="请选择文件，选择将自动上传"
+        ></el-input>
+        <el-button @click="submit" v-show="showButton">确定</el-button>
+      </div>
+    </div>
+    <!--引入 vue-->
+    <script src="./plugins/vue/vue.js"></script>
+    <!--引入 axios-->
+    <script src="./plugins/vue/axios.min.js"></script>
+    <!-- 引入组件库 -->
+    <script src="./plugins/elementui/index.js"></script>
+    <script>
+      new Vue({
+        el: '#app',
+        data: {
+          value: [],
+          options: [
+            {
+              value: 'yuyan',
+              label: '语言',
+              children: [
+                {
+                  value: 'text2voiceMin',
+                  label: '文本合成',
+                },
+              ],
+            },
+            {
+              value: 'shibie',
+              label: '通用识别',
+              children: [
+                {
+                  value: 'wordSearch',
+                  label: '通用文字识别',
+                },
+                {
+                  value: 'workSearch',
+                  label: '办公文档识别',
+                },
+                {
+                  value: 'perSearch',
+                  label: '人体检测与属性识别',
+                },
+                {
+                  value: 'goodSearch',
+                  label: '物体识别',
+                },
+                ,
+                {
+                  value: 'carSearch',
+                  label: '车辆识别',
+                },
+                {
+                  value: 'logoSearch',
+                  label: 'logo识别',
+                },
+                {
+                  value: 'plantSearch',
+                  label: '植物识别',
+                },
+              ],
+            },
+            {
+              value: 'tuxiang',
+              label: '图像',
+              children: [
+                {
+                  value: 'pictureFix',
+                  label: '图像修复',
+                },
+                {
+                  value: 'blackWhite',
+                  label: '黑白图片上色',
+                },
+                {
+                  value: 'dongman',
+                  label: '人像动漫化',
+                },
+              ],
+            },
+          ],
+          showFile: false,
+          fileList: [],
+          inputText: '',
+          inputPic: null,
+          noselect: true,
+          showButton: true,
+        },
+        methods: {
+          submit(e) {
+            switch (this.value[1]) {
+              case 'text2voiceMin':
+                if (!this.inputText) {
+                  return this.$message('输入框不能为空哦');
+                }
+                let qesSpan = document.createElement('span');
+                qesSpan.innerHTML = this.inputText;
+                this.meAppend(qesSpan);
+                let text = this.inputText;
+                this.inputText = '';
+                axios
+                  .post('/text2voice', { text: text })
+                  .then((res) => {
+                    let audio = document.createElement('audio');
+                    audio.setAttribute('src', './temp/audio/' + res.data);
+                    audio.setAttribute('controls', 'true');
+                    this.aiAppend(audio);
+                  })
+                  .catch((err) => {
+                    console.log(err.message);
+                  });
+                break;
+            }
+          },
+          addPic(e) {
+            let picture = e.target.files[0];
+            const image = document.createElement('img');
+            image.style.height = '250px';
+            const reader = new FileReader();
+            reader.readAsDataURL(picture);
+            reader.onload = function () {
+              image.src = this.result;
+              window.file = picture;
+            };
+            this.meAppend(image);
+
+            let param = new FormData();
+            param.append('files', picture);
+            this.inputPic = '';
+            if (this.value[1] == 'wordSearch') {
+              axios
+                .post('/wordSearch', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  let result = res.data.data.words_result;
+                  let ul = document.createElement('ol');
+                  ul.innerHTML = '识别内容如下：';
+                  for (let i in result) {
+                    let li = document.createElement('li');
+                    li.innerHTML = result[i].words;
+                    ul.appendChild(li);
+                  }
+                  this.aiAppend(ul);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else if (this.value[1] == 'workSearch') {
+              axios
+                .post('/workSearch', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  let result = res.data.data.results;
+                  let ul = document.createElement('ol');
+                  ul.style.paddingLeft = '20px';
+                  ul.innerHTML = '识别内容如下：';
+                  for (let i in result) {
+                    let li = document.createElement('li');
+                    li.innerHTML = result[i].words.word;
+                    ul.appendChild(li);
+                  }
+                  console.log(result);
+                  this.aiAppend(ul);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else if (this.value[1] == 'perSearch') {
+              axios
+                .post('/perSearch', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  console.log(res.data.data);
+                  let personNum = res.data.data.person_num;
+                  let personInfo = res.data.data.person_info;
+                  let ul = document.createElement('ol');
+                  ul.style.paddingLeft = '20px';
+                  ul.innerHTML = '识别到共有' + personNum + '个人';
+                  for (let i in personInfo) {
+                    let li = document.createElement('li');
+                    let person = {
+                      age: personInfo[i].attributes.age.name,
+                      gender: personInfo[i].attributes.gender.name,
+                      orientation: personInfo[i].attributes.orientation.name,
+                      upper_wear_fg: personInfo[i].attributes.upper_wear_fg.name,
+                    };
+                    console.log(person);
+                    let o = 1 * i + 1;
+                    li.innerHTML = `检测到第${o}个人：
+                    年龄：${person.age}
+                    性别：${person.gender}
+                    状态：${person.orientation}
+                    着装：${person.upper_wear_fg}
+                    `;
+                    ul.appendChild(li);
+                  }
+                  // console.log(result);
+                  this.aiAppend(ul);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else if (this.value[1] == 'goodSearch') {
+              axios
+                .post('/goodSearch', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  res = res.data.data.result;
+                  let ul = document.createElement('ol');
+                  ul.style.paddingLeft = '20px';
+                  ul.innerHTML = '让我康康，如果我没猜错的话，这是：';
+                  console.log(res);
+                  for (let i = 0; i < res.length; i++) {
+                    let li = document.createElement('li');
+                    li.innerHTML = `
+                    有${Math.floor(res[i].score * 100)}%可能是：${res[i].keyword}
+                    `;
+                    ul.appendChild(li);
+                  }
+                  this.aiAppend(ul);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else if (this.value[1] == 'carSearch') {
+              axios
+                .post('/carSearch', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  let color_result = res.data.data.color_result;
+                  let result = res.data.data.result;
+                  let ul = document.createElement('ol');
+                  ul.style.paddingLeft = '20px';
+                  ul.innerHTML =
+                    '让我康康，如果我没猜错的话，这个车是' + color_result + '的吧，我猜他是：';
+                  for (let i = 0; i < result.length; i++) {
+                    let li = document.createElement('li');
+                    li.innerHTML = `
+                    有${Math.floor(result[i].score * 100)}%可能是：${result[i].name}
+                    他的年份大约在${result[i].year}
+                    `;
+                    ul.appendChild(li);
+                  }
+                  this.aiAppend(ul);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else if (this.value[1] == 'logoSearch') {
+              axios
+                .post('/logoSearch', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  if (res.data.data.error_code) {
+                    let errspan = document.createElement('span');
+                    errspan.innerHTML = '不好意思熬，你suo这个品牌我不道';
+                    return this.aiAppend(errspan);
+                  }
+                  let result = res.data.data.result;
+                  let ul = document.createElement('ol');
+                  ul.style.paddingLeft = '20px';
+                  ul.innerHTML = '让我康康，如果我没猜错的话，这个牌子是：';
+                  for (let i = 0; i < result.length; i++) {
+                    let li = document.createElement('li');
+                    li.innerHTML = `
+                    有${Math.floor(result[i].probability * 100)}%可能是：${result[i].name}
+                    `;
+                    ul.appendChild(li);
+                  }
+                  this.aiAppend(ul);
+                })
+                .catch((err) => {
+                  if (err) {
+                    let errspan = document.createElement('span');
+                    errspan.innerHTML = '不好意思熬，你suo这个品牌我不道';
+                    this.aiAppend(ul);
+                  }
+                });
+            } else if (this.value[1] == 'plantSearch') {
+              axios
+                .post('/plantSearch', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  let result = res.data.data.result;
+                  let ul = document.createElement('ol');
+                  ul.style.paddingLeft = '20px';
+                  ul.innerHTML = '让我康康，如果我没猜错的话，这个植物：';
+                  for (let i = 0; i < result.length; i++) {
+                    let li = document.createElement('li');
+                    li.innerHTML = `
+                    有${Math.floor(result[i].score * 100)}%可能是：${result[i].name}
+                    `;
+                    ul.appendChild(li);
+                  }
+                  this.aiAppend(ul);
+                })
+                .catch((err) => {
+                  this.$message(err.msg);
+                });
+            } else if (this.value[1] == 'pictureFix') {
+              axios
+                .post('/pictureFix', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  let path = res.data.path;
+                  let img = document.createElement('img');
+                  img.setAttribute('src', path);
+                  img.style.height = '250px';
+                  this.aiAppend(img);
+                })
+                .catch((err) => {
+                  this.$message(err.msg);
+                });
+            } else if (this.value[1] == 'blackWhite') {
+              axios
+                .post('/blackWhite', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  let path = res.data.path;
+                  let img = document.createElement('img');
+                  img.setAttribute('src', path);
+                  img.style.height = '250px';
+                  this.aiAppend(img);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else if (this.value[1] == 'dongman') {
+              axios
+                .post('/dongman', param, {
+                  'Content-type': 'multipart/form-data',
+                })
+                .then((res) => {
+                  let path = res.data.path;
+                  let img = document.createElement('img');
+                  img.setAttribute('src', path);
+                  img.style.height = '250px';
+                  this.aiAppend(img);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            }
+          },
+
+          // ai回答
+          aiAppend(dom) {
+            // 回答标签
+            let audioDiv = document.createElement('div');
+            audioDiv.setAttribute('class', 'answer info');
+            // 图片
+            let img = document.createElement('img');
+            img.setAttribute('src', './images/ai.jfif');
+            img.setAttribute('id', 'firstImg');
+            // ai-info
+            let ai_info = document.createElement('div');
+            ai_info.setAttribute('class', 'ai-info');
+            // ai
+            let aiDiv = document.createElement('div');
+            aiDiv.setAttribute('class', 'ai');
+            // 添加
+            audioDiv.appendChild(dom);
+            ai_info.appendChild(img);
+            ai_info.appendChild(audioDiv);
+            aiDiv.appendChild(ai_info);
+            document.querySelector('#content').appendChild(aiDiv);
+          },
+          // 客户问题
+          meAppend(dom) {
+            // 回答标签
+            let audioDiv = document.createElement('div');
+            audioDiv.setAttribute('class', 'question info');
+            // 图片
+            let img = document.createElement('img');
+            img.setAttribute('src', './images/dragon.png');
+            img.setAttribute('id', 'firstImg');
+            // ai-info
+            let ai_info = document.createElement('div');
+            ai_info.setAttribute('class', 'me-info');
+            // ai
+            let aiDiv = document.createElement('div');
+            aiDiv.setAttribute('class', 'me');
+            // 添加
+            audioDiv.appendChild(dom);
+            ai_info.appendChild(img);
+            ai_info.appendChild(audioDiv);
+            aiDiv.appendChild(ai_info);
+            document.querySelector('#content').appendChild(aiDiv);
+          },
+        },
+        watch: {
+          value(newvalue, oldvalue) {
+            if (newvalue[0] === 'shibie' || newvalue[0] === 'tuxiang') {
+              this.showFile = true;
+              this.noselect = false;
+              this.showButton = false;
+              return;
+            }
+            this.noselect = false;
+            this.showFile = false;
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

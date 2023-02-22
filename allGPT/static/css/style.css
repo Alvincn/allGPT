@@ -23,8 +23,9 @@ body {
   height: auto;
   margin: 0 auto;
   position: relative;
+  margin-bottom: 100px;
 }
-#content img {
+#content #firstImg {
   position: absolute;
   top: 0;
   height: 60px;
@@ -50,15 +51,14 @@ body {
 #content .me {
   width: 100%;
   min-height: 60px;
+  height: auto;
   position: relative;
   margin-bottom: 10px;
 }
 #content .me .me-info {
-  max-width: 700px;
-  position: absolute;
-  right: 0;
   display: flex;
   align-items: center;
+  flex-direction: row-reverse;
 }
 #content .me .me-info img {
   right: 0;
@@ -68,7 +68,6 @@ body {
 }
 #content .info {
   background-color: aqua;
-  max-width: 500px;
   display: inline-block;
   padding: 10px 20px;
   border: solid 1px aqua;
