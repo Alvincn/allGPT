@@ -6,6 +6,7 @@
 body {
   width: 100vw;
   background-color: #bbe4ff;
+  overflow-x: hidden;
 }
 #app {
   width: 100%;
@@ -58,6 +59,7 @@ body {
 #content .me .me-info {
   display: flex;
   align-items: center;
+  min-height: 60px;
   flex-direction: row-reverse;
 }
 #content .me .me-info img {
@@ -82,4 +84,20 @@ body {
   height: auto;
   margin: 0 auto;
   display: flex;
+}
+@media screen and (max-width: 650px) {
+  #logo {
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    text-align: center;
+    width: 100%;
+  }
+  #content {
+    margin-top: 20px;
+    width: 100%;
+  }
+  #footer {
+    bottom: 60px;
+  }
 }

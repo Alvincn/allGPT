@@ -1,11 +1,15 @@
+import json
+
 from flask import Flask, redirect, request, jsonify
 # 解决跨域
 from flask_cors import CORS
 # 导入语音模块
-from base import client, client2, client3, client4, client5
+from base import client, client2, client3, client4, client5, client6
 # 导入时间
 from time import time
 import base64
+# 发起请求
+import requests
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -377,6 +381,27 @@ def dongman():
         ret["msg"] = "上传失败！"
         # 返回
     return ret
+
+
+@app.route('/chat', methods=["POST"])
+def chat():
+    text = request.get_json()['text']
+    access_token = request.get_json()['access_token']
+    url = "https://aip.baidubce.com/rpc/2.0/nlp/v1/emotion?access_token=" + access_token
+    headers = {'Content-Type': 'application/json'}
+    urlJson = {'text': text}
+    # 字符串格式
+    result = requests.post(url, json=urlJson, headers=headers)
+    # print(result.text)
+    return result.text
+
+
+@app.route('/getAccess', methods=["POST"])
+def getAccess():
+    url = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=RmtPf323DPDvfz3uGQcG1vso&client_secret=hn4ooLrYnn4GNWGtjTniDiCbyBdFsR90"
+    # 字符串格式
+    access_token = requests.get(url).text
+    return access_token
 
 
 if __name__ == '__main__':

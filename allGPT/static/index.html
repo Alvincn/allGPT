@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="./plugins/elementui/index.css" />
     <link rel="shortcut icon" href="./images/ai.jfif" type="image/x-icon" />
     <link rel="stylesheet" href="./css/style.css" />
-    <title>Document</title>
+    <title>ALLGPT</title>
   </head>
   <body>
     <div id="app">
@@ -30,7 +30,7 @@
         <div class="ai">
           <div class="ai-info">
             <img id="firstImg" src="./images/ai.jfif" alt="" />
-            <div class="answer info">请在下方选择框进行输入选择☀️</div>
+            <div class="answer info">请先选择操作，再进行输入/选择文件☀️</div>
           </div>
         </div>
       </div>
@@ -67,6 +67,10 @@
         data: {
           value: [],
           options: [
+            {
+              value: 'chat',
+              label: '唠唠嗑',
+            },
             {
               value: 'yuyan',
               label: '语言',
@@ -140,15 +144,129 @@
         },
         methods: {
           submit(e) {
+            let text = this.inputText;
+            // 如果当前选择为chat
+            if (this.value[0] == 'chat') {
+              // 判断输入框是否为空
+              if (!this.inputText.trim()) {
+                return this.$message('输入框不能为空哦');
+              }
+              // 创建我的消息
+              let qesSpan = document.createElement('span');
+              qesSpan.innerHTML = this.inputText;
+              this.meAppend(qesSpan);
+              // 如果包含时间，返回时间
+              if (this.inputText.includes('时间')) {
+                let aiSpan = document.createElement('span');
+                let date = new Date();
+                aiSpan.innerHTML = date.toLocaleString();
+                this.inputText = '';
+                return this.aiAppend(aiSpan);
+              } else if (this.inputText.includes('天气')) {
+                // 返回天气
+                let city = this.inputText.split('天气')[0];
+                console.log(city);
+                this.inputText = '';
+                let appcode = ' b1d83ef16dd74e719a884a18b3e7b31c';
+                let config = {
+                  headers: {
+                    Authorization: 'APPCODE' + appcode,
+                  },
+                  query: {
+                    city: city,
+                  },
+                };
+                return axios
+                  .get(
+                    'https://jisutqybmf.market.alicloudapi.com/weather/query?city=' +
+                      config.query.city,
+                    config
+                  )
+                  .then((res) => {
+                    let result = {
+                      city: res.data.result.city,
+                      date: res.data.result.date,
+                      week: res.data.result.week,
+                      weather: res.data.result.weather,
+                      temp: res.data.result.temp,
+                      temphigh: res.data.result.temphigh,
+                      templow: res.data.result.templow,
+                      updatetime: res.data.result.updatetime,
+                    };
+                    let weaUl = document.createElement('ul');
+                    weaUl.style.listStyle = 'none';
+                    for (let i in result) {
+                      let li = document.createElement('li');
+                      if (i == 'city') {
+                        li.innerHTML = '🏛️城市：' + result[i];
+                      }
+                      if (i == 'date') {
+                        li.innerHTML = '🕐日期：' + result[i];
+                      }
+                      if (i == 'week') {
+                        li.innerHTML = '💫星期：' + result[i];
+                      }
+                      if (i == 'weather') {
+                        li.innerHTML = '📍天气:' + result[i];
+                      }
+                      if (i == 'temp') {
+                        li.innerHTML = '🌈当前温度：' + result[i];
+                      }
+                      if (i == 'temphigh') {
+                        li.innerHTML = '🌡️最高温度：' + result[i];
+                      }
+                      if (i == 'templow') {
+                        li.innerHTML = '❄️最低温度：' + result[i];
+                      }
+                      if (i == 'updatetime') {
+                        li.innerHTML = '⚡更新时间：' + result[i];
+                      }
+
+                      weaUl.appendChild(li);
+                    }
+                    return this.aiAppend(weaUl);
+                    // console.log(result);
+                  });
+              }
+              // 语言回复
+              let access_token = localStorage.getItem('access_token');
+              if (!access_token) {
+                return axios
+                  .post('/getAccess')
+                  .then((res) => {
+                    localStorage.setItem('access_token', res.data.access_token);
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  });
+              }
+              console.log(this.inputText);
+              axios
+                .post('/chat', {
+                  access_token: access_token,
+                  text: this.inputText,
+                })
+                .then((res) => {
+                  let result = res.data.items[0].replies[0];
+                  let aispan1 = document.createElement('span');
+                  if (!result) {
+                    aispan1.innerHTML = '不信';
+                    return this.aiAppend(aispan1);
+                  }
+                  aispan1.innerHTML = result + '😄';
+                  this.aiAppend(aispan1);
+                });
+
+              return (this.inputText = '');
+            }
             switch (this.value[1]) {
               case 'text2voiceMin':
-                if (!this.inputText) {
-                  return this.$message('输入框不能为空哦');
-                }
                 let qesSpan = document.createElement('span');
                 qesSpan.innerHTML = this.inputText;
                 this.meAppend(qesSpan);
-                let text = this.inputText;
+                if (!this.inputText) {
+                  return this.$message('输入框不能为空哦');
+                }
                 this.inputText = '';
                 axios
                   .post('/text2voice', { text: text })
@@ -433,7 +551,7 @@
             audioDiv.setAttribute('class', 'question info');
             // 图片
             let img = document.createElement('img');
-            img.setAttribute('src', './images/dragon.png');
+            img.setAttribute('src', './images/cat.jpg');
             img.setAttribute('id', 'firstImg');
             // ai-info
             let ai_info = document.createElement('div');
