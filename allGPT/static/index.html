@@ -226,6 +226,11 @@
                     }
                     return this.aiAppend(weaUl);
                     // console.log(result);
+                  })
+                  .catch((err) => {
+                    let errspan = document.createElement('span');
+                    errspan.innerHTML = '请按照【吉林市天气】这样访问天气';
+                    this.aiAppend(errspan);
                   });
               }
               // 语言回复
