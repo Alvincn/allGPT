@@ -5,9 +5,9 @@ from aip import AipImageClassify
 from aip import AipImageProcess
 from aip import AipNlp
 
-APP_ID = '30610912'
-API_KEY = 'RmtPf323DPDvfz3uGQcG1vso'
-SECRET_KEY = 'hn4ooLrYnn4GNWGtjTniDiCbyBdFsR90'
+APP_ID = 'Your APP_Id'
+API_KEY = 'Your API_KEY'
+SECRET_KEY = 'Your Secret_Key'
 
 client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
 client2 = AipOcr(APP_ID, API_KEY, SECRET_KEY)
